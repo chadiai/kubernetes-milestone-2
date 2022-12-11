@@ -1,0 +1,39 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata: 
+  name: cai-mongodb-deploy
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: cai-mongodb
+  template:
+    metadata:
+      labels:
+        app: cai-mongodb
+    spec:
+      containers:
+        - name: mongodb
+          image: mongo
+          volumeMounts:
+            - name: mongodb-data
+              mountPath: /data/db
+      volumes:
+        - name: mongodb-data
+          hostPath:
+            path: /data/host/mongo
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: cai-mongodb-service
+spec:
+  selector:
+    app: cai-mongodb
+  type: NodePort
+  ports:
+    - name: mongodb
+      protocol: TCP
+      port: 27017
+      nodePort: 30300
+      targetPort: 27017

@@ -1,0 +1,40 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: cai-fastapi-deployment
+  namespace: default
+  labels:
+    app: cai-fastapi-app
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: cai-fastapi-app
+  template:
+    metadata:
+      labels:
+        app: cai-fastapi-app
+    spec:
+      containers:
+        - image: chadiai/fastapi:1.0
+          name: cai-fastapi-container
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 80
+              name: cai-fastapi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: cai-fastapi-service
+  namespace: default
+  labels:
+    app: cai-fastapi
+spec:
+  selector:
+    app: cai-fastapi-app
+  type: NodePort
+  ports:
+    - port: 8080
+      nodePort: 30200
+      targetPort: 8080

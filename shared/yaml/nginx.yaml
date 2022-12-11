@@ -1,0 +1,75 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: index-html-configmap
+  namespace: default
+data:
+  index.html: |
+    <!DOCTYPE html>
+    <html lang="en">
+      <head>
+        <meta charset="UTF-8" />
+        <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Milestone 2</title>
+      </head>
+      <body>
+        <h1><span id="user">Loading...</span> has reached milestone 2!</h1>
+        <script>
+          // fetch user from API
+          fetch("http://10.0.0.51:30200/user")
+            .then((res) => res.json())
+            .then((data) => {
+              // get user name
+              const user = data.name;
+              // display user name
+              document.getElementById("user").innerText = user;
+            });
+        </script>
+      </body>
+    </html>
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: cai-nginx-deployment
+  labels:
+    app: cai-nginx
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: cai-nginx
+  template:
+    metadata:
+      labels:
+        app: cai-nginx
+    spec:
+      containers:
+        - name: nginx
+          image: nginx:latest
+          ports:
+            - containerPort: 80
+          volumeMounts:
+            - name: nginx-index-file
+              mountPath: /usr/share/nginx/html/
+      volumes:
+        - name: nginx-index-file
+          configMap:
+            name: index-html-configmap
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: cai-nginx-service
+  namespace: default
+spec:
+  selector:
+    app: cai-nginx
+  type: NodePort
+  ports:
+    - port: 80
+      nodePort: 30100
+      targetPort: 80
